@@ -243,7 +243,12 @@ export default function App() {
           </div>
 
           {/* Display */}
-          <div ref={displayRef} className="px-5 pt-3 pb-4 min-h-[96px] flex flex-col justify-end items-end select-none">
+          <div ref={displayRef} className="px-5 pt-3 pb-1 min-h-[96px] flex flex-col justify-end items-end select-none">
+            {/* Mode indicators */}
+            <div className="flex gap-2 mb-1 w-full justify-start border-b border-white/5 pb-1">
+              <span className={`text-[9px] font-black tracking-tighter ${angleMode === 'DEG' ? 'text-cyan-400' : 'text-slate-600/50'}`}>DEG</span>
+              <span className={`text-[9px] font-black tracking-tighter ${angleMode === 'RAD' ? 'text-cyan-400' : 'text-slate-600/50'}`}>RAD</span>
+            </div>
             {/* Expression line */}
             <div className="text-slate-500 text-xs h-5 w-full text-right overflow-x-auto whitespace-nowrap leading-5">
               {expression || '\u00A0'}
