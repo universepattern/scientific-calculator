@@ -243,28 +243,9 @@ export default function App() {
           </div>
 
           {/* Display */}
-          <div ref={displayRef} className="px-5 pt-6 pb-4 min-h-[100px] flex flex-col justify-end items-end select-none relative">
-            {/* Mode Indicators */}
-            <div className="absolute top-3 left-5 flex gap-1.5">
-              <div className={`
-                px-1.5 py-0.5 rounded text-[8px] font-black tracking-widest border transition-all duration-300
-                ${angleMode === 'DEG' 
-                  ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.15)]' 
-                  : 'bg-transparent border-slate-700/40 text-slate-600'}
-              `}>
-                DEG
-              </div>
-              <div className={`
-                px-1.5 py-0.5 rounded text-[8px] font-black tracking-widest border transition-all duration-300
-                ${angleMode === 'RAD' 
-                  ? 'bg-amber-500/10 border-amber-500/40 text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.15)]' 
-                  : 'bg-transparent border-slate-700/40 text-slate-600'}
-              `}>
-                RAD
-              </div>
-            </div>
+          <div ref={displayRef} className="px-5 pt-3 pb-4 min-h-[96px] flex flex-col justify-end items-end select-none">
             {/* Expression line */}
-            <div className="text-slate-500 text-xs h-5 w-full text-right overflow-x-auto whitespace-nowrap leading-5 mb-1">
+            <div className="text-slate-500 text-xs h-5 w-full text-right overflow-x-auto whitespace-nowrap leading-5">
               {expression || '\u00A0'}
             </div>
             {/* Main number */}
