@@ -15,7 +15,8 @@ This is a responsive, web-based calculator that supports standard arithmetic ope
 - **Copy to Clipboard:** One-click button to instantly copy the current display or result.
 - **Full Keyboard Support:** Type seamlessly using your physical keyboard (supports numbers, operations, Enter, Backspace, Escape, and letters for trig functions).
 - **Responsive Layout Toggle:** Defaults to a wide landscape layout, but features a dedicated "Tall Layout" button to optimize the view for portrait mobile screens.
-- **Modern UI/UX:** Built with Tailwind CSS v4, featuring a sleek, tactile slate/dark aesthetic.
+- **Modern UI/UX:** Built with Tailwind CSS v4, featuring a stunning "deep space blue" aesthetic with frosted glass elements (`backdrop-blur`) and vibrant blue action buttons.
+- **Animated Math Background:** Features a subtle, dynamically generated background canvas with glowing, floating mathematical equations (calculus and trigonometry) that drift in slow-motion without distracting from the main calculator.
 
 ## The Math Behind It
 Standard JavaScript uses the `eval()` function or primitive number operators, which are notorious for floating-point inaccuracies and security vulnerabilities. 
