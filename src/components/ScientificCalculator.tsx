@@ -170,7 +170,7 @@ export const ScientificCalculator: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 p-4 font-mono select-none">
       <div className="w-full max-w-4xl flex justify-between items-center mb-6 px-4">
-        <h1 className="text-slate-400 font-bold tracking-widest text-lg">CASIO FX-SIMULATOR</h1>
+        <h1 className="text-slate-400 font-bold tracking-widest text-lg">SCIENTIFIC CALCULATOR</h1>
         <button 
           onClick={() => setIsPortrait(!isPortrait)}
           className="flex items-center gap-2 bg-slate-800 text-slate-300 px-5 py-2.5 rounded-full hover:bg-slate-700 transition-colors font-semibold shadow-lg border border-slate-700 active:scale-95"
