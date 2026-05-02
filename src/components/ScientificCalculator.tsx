@@ -1,4 +1,4 @@
-import React, { useReducer, useCallback, useEffect, useState } from 'react';
+import React, { useReducer, useCallback, useEffect, useState, useRef } from 'react';
 import { create, all } from 'mathjs';
 import { Smartphone, Monitor, Copy, Check, History } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -63,12 +63,10 @@ function calculatorReducer(state: CalcState, action: CalcAction): CalcState {
         const result = math.evaluate(state.expression);
         const formattedResult = math.format(result, { precision: 10 }).toString();
         
-        // Avoid duplicate history entries
         const isDuplicate = state.history.length > 0 && 
             state.history[state.history.length - 1].expression === state.expression;
 
         const newHistory = isDuplicate ? state.history : [...state.history, { expression: state.expression, result: formattedResult }];
-        // Keep last 50 history entries
         if (newHistory.length > 50) newHistory.shift();
 
         return {
@@ -148,6 +146,89 @@ const NUMPAD_BUTTONS: ButtonDef[] = [
   { label: '=', value: 'eval', type: 'action', keyMap: ['Enter', '='] },
 ];
 
+const MathBackground = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    const equations = [
+      '∫ e^x dx = e^x + C', 'sin²θ + cos²θ = 1', 'e^(iπ) + 1 = 0',
+      'd/dx [uv] = u dv/dx + v du/dx', 'lim_{x→0} sin(x)/x = 1',
+      'F(s) = ∫ f(t)e^{-st} dt', '∇×E = -∂B/∂t', '∮ B·dl = μ₀I',
+      'x = (-b ± √(b² - 4ac)) / 2a', 'A = πr²', 'V = 4/3 πr³',
+      '∑_{n=1}^∞ (1/n²) = π²/6', 'd/dx (x^n) = nx^{n-1}', '∇²ϕ = 0'
+    ];
+
+    const drops: { x: number, y: number, speed: number, text: string, opacity: number, scale: number }[] = [];
+    
+    // Create columns like matrix
+    const columns = Math.floor(width / 150);
+    
+    for (let i = 0; i < columns; i++) {
+      drops.push({
+        x: i * 150 + Math.random() * 50,
+        y: Math.random() * height * -1,
+        speed: 0.15 + Math.random() * 0.3, // Super slow motion
+        text: equations[Math.floor(Math.random() * equations.length)],
+        opacity: 0.15 + Math.random() * 0.4,
+        scale: 0.9 + Math.random() * 0.4
+      });
+    }
+
+    let animationFrameId: number;
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
+      
+      drops.forEach(drop => {
+        ctx.fillStyle = `rgba(217, 119, 6, ${drop.opacity})`; // amber-600 color
+        ctx.font = `${14 * drop.scale}px monospace`;
+        ctx.fillText(drop.text, drop.x, drop.y);
+        
+        drop.y += drop.speed;
+        
+        if (drop.y > height + 50) {
+          drop.y = -50;
+          drop.text = equations[Math.floor(Math.random() * equations.length)];
+        }
+      });
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    const handleResize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      className="fixed inset-0 pointer-events-none blur-[3px] opacity-80 z-0" 
+    />
+  );
+};
+
 export const ScientificCalculator: React.FC = () => {
   const [state, dispatch] = useReducer(calculatorReducer, initialState);
   const [isPortrait, setIsPortrait] = useState(false);
@@ -187,12 +268,12 @@ export const ScientificCalculator: React.FC = () => {
       tabIndex={-1}
       onClick={() => handlePress(btn)}
       className={cn(
-        "h-14 sm:h-16 rounded-xl text-sm sm:text-lg font-bold transition-all active:scale-95 flex items-center justify-center shadow-sm border-b-4 active:border-b-0 active:translate-y-1",
-        btn.type === 'num' && "bg-slate-700 border-slate-900 text-slate-100 hover:bg-slate-600",
-        btn.type === 'op' && "bg-blue-900 border-blue-950 text-blue-100 hover:bg-blue-800",
-        btn.type === 'func' && "bg-slate-800 border-slate-950 text-emerald-400 hover:bg-slate-700 text-xs sm:text-sm",
-        btn.type === 'util' && "bg-rose-900 border-rose-950 text-rose-100 hover:bg-rose-800",
-        btn.type === 'action' && "bg-emerald-600 border-emerald-900 text-white hover:bg-emerald-500"
+        "h-14 sm:h-16 rounded-xl text-sm sm:text-lg font-bold transition-all active:scale-95 flex items-center justify-center shadow-sm border-b-4 active:border-b-0 active:translate-y-1 relative z-10",
+        btn.type === 'num' && "bg-orange-50 border-orange-200 text-orange-950 hover:bg-orange-100",
+        btn.type === 'op' && "bg-amber-200 border-amber-300 text-amber-900 hover:bg-amber-300",
+        btn.type === 'func' && "bg-orange-100/60 border-orange-200 text-orange-800 hover:bg-orange-200 text-xs sm:text-sm",
+        btn.type === 'util' && "bg-rose-200 border-rose-300 text-rose-900 hover:bg-rose-300",
+        btn.type === 'action' && "bg-amber-600 border-amber-700 text-white hover:bg-amber-500"
       )}
     >
       {btn.label}
@@ -200,12 +281,14 @@ export const ScientificCalculator: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 p-4 font-mono select-none">
-      <div className="w-full max-w-4xl flex justify-between items-center mb-6 px-4">
-        <h1 className="text-slate-400 font-bold tracking-widest text-lg">SCIENTIFIC CALCULATOR</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-orange-50/50 p-4 font-mono select-none relative overflow-hidden">
+      <MathBackground />
+      
+      <div className="w-full max-w-4xl flex justify-between items-center mb-6 px-4 relative z-10">
+        <h1 className="text-amber-700/80 font-bold tracking-widest text-lg drop-shadow-sm">SCIENTIFIC CALCULATOR</h1>
         <button 
           onClick={() => setIsPortrait(!isPortrait)}
-          className="flex items-center gap-2 bg-slate-800 text-slate-300 px-5 py-2.5 rounded-full hover:bg-slate-700 transition-colors font-semibold shadow-lg border border-slate-700 active:scale-95"
+          className="flex items-center gap-2 bg-white/60 backdrop-blur-md text-amber-800 px-5 py-2.5 rounded-full hover:bg-white/80 transition-colors font-semibold shadow-lg border border-amber-200 active:scale-95"
         >
           {isPortrait ? <Monitor size={18} /> : <Smartphone size={18} />}
           {isPortrait ? 'Wide Layout' : 'Tall Layout'}
@@ -213,24 +296,24 @@ export const ScientificCalculator: React.FC = () => {
       </div>
 
       <div className={cn(
-        "bg-slate-900 rounded-[2rem] shadow-2xl border-4 border-slate-800 overflow-hidden flex transition-all duration-500",
+        "bg-white/80 backdrop-blur-2xl rounded-[2rem] shadow-[0_20px_50px_rgba(217,119,6,0.15)] border border-orange-100 overflow-hidden flex transition-all duration-500 relative z-10",
         isPortrait ? "flex-col max-w-md w-full" : "flex-col max-w-4xl w-full"
       )}>
-        <div className="relative p-6 sm:p-8 flex flex-col items-end justify-end space-y-2 bg-slate-900/80 border-b-4 border-slate-950 min-h-[160px]">
+        <div className="relative p-6 sm:p-8 flex flex-col items-end justify-end space-y-2 bg-gradient-to-br from-amber-50/90 to-orange-100/90 border-b border-orange-200 min-h-[160px]">
           
           <div className="absolute top-4 left-4 flex gap-4">
             <button 
               onClick={handleCopy} 
-              className="text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-2 text-sm font-semibold group"
+              className="text-amber-600/60 hover:text-amber-800 transition-colors flex items-center gap-2 text-sm font-semibold group"
               title="Copy to Clipboard"
             >
-              {copied ? <Check size={20} className="text-emerald-400" /> : <Copy size={20} className="group-hover:scale-110 transition-transform" />}
+              {copied ? <Check size={20} className="text-emerald-500" /> : <Copy size={20} className="group-hover:scale-110 transition-transform" />}
             </button>
             <button 
               onClick={() => setShowHistory(!showHistory)} 
               className={cn(
-                "hover:text-slate-300 transition-colors flex items-center gap-2 text-sm font-semibold group",
-                showHistory ? "text-emerald-400" : "text-slate-500"
+                "hover:text-amber-800 transition-colors flex items-center gap-2 text-sm font-semibold group",
+                showHistory ? "text-amber-800" : "text-amber-600/60"
               )}
               title="Calculation History"
             >
@@ -238,64 +321,64 @@ export const ScientificCalculator: React.FC = () => {
             </button>
           </div>
 
-          <div className="text-slate-400 text-sm sm:text-base h-6 w-full truncate text-right font-medium pr-1">
+          <div className="text-amber-700/60 text-sm sm:text-base h-6 w-full truncate text-right font-semibold pr-1">
             {state.lastResult && !showHistory ? `${state.lastResult} =` : ''}
           </div>
           <div className={cn(
-            "text-4xl sm:text-6xl font-bold transition-all truncate w-full text-right tracking-tight",
-            state.hasError ? "text-rose-500" : "text-slate-100"
+            "text-4xl sm:text-6xl font-bold transition-all truncate w-full text-right tracking-tight drop-shadow-sm",
+            state.hasError ? "text-rose-500" : "text-amber-950"
           )}>
             {state.display}
           </div>
         </div>
 
         <div className={cn(
-          "bg-slate-800/40 relative",
+          "bg-orange-50/50 relative",
           showHistory ? "flex flex-col p-4 sm:p-6" : cn("flex p-4 sm:p-6 gap-4 sm:gap-6", isPortrait ? "flex-col" : "flex-row")
         )}>
           {showHistory ? (
             <div className="w-full h-[350px] sm:h-[450px] overflow-y-auto flex flex-col gap-3 pr-2">
-              <div className="flex justify-between items-center mb-2 px-2 sticky top-0 bg-slate-800/40 backdrop-blur-md py-2 z-10 rounded-lg">
-                <h2 className="text-slate-400 font-bold tracking-widest text-sm">HISTORY</h2>
+              <div className="flex justify-between items-center mb-2 px-2 sticky top-0 bg-orange-50/80 backdrop-blur-md py-2 z-20 rounded-lg">
+                <h2 className="text-amber-800 font-bold tracking-widest text-sm">HISTORY</h2>
                 {state.history.length > 0 && (
                   <button 
                     onClick={() => dispatch({ type: 'CLEAR_HISTORY' })}
-                    className="text-rose-400 hover:text-rose-300 text-xs font-semibold tracking-wider bg-rose-950/30 px-4 py-1.5 rounded-full hover:bg-rose-900/50 transition-colors"
+                    className="text-rose-600 hover:text-rose-700 text-xs font-bold tracking-wider bg-rose-100 px-4 py-1.5 rounded-full hover:bg-rose-200 transition-colors shadow-sm"
                   >
                     CLEAR
                   </button>
                 )}
               </div>
               {state.history.length === 0 ? (
-                <div className="flex-1 flex items-center justify-center text-slate-500 font-medium pb-10">
+                <div className="flex-1 flex items-center justify-center text-amber-700/60 font-medium pb-10">
                   No history recorded yet.
                 </div>
               ) : (
                 [...state.history].reverse().map((item, i) => (
                   <div 
                     key={i} 
-                    className="flex flex-col text-right cursor-pointer bg-slate-800/60 hover:bg-slate-700 p-4 rounded-xl transition-colors border border-slate-700/50 group"
+                    className="flex flex-col text-right cursor-pointer bg-white/80 hover:bg-orange-50 p-4 rounded-xl transition-colors border border-amber-100 shadow-sm group"
                     onClick={() => {
                       dispatch({ type: 'SET_EXPRESSION', payload: item.result });
                       setShowHistory(false);
                     }}
                   >
-                    <div className="text-slate-400 text-sm mb-1 group-hover:text-slate-300 transition-colors">{item.expression} =</div>
-                    <div className="text-slate-200 font-bold text-2xl group-hover:text-emerald-400 transition-colors">{item.result}</div>
+                    <div className="text-amber-700/70 text-sm mb-1 group-hover:text-amber-800 transition-colors font-medium">{item.expression} =</div>
+                    <div className="text-amber-950 font-bold text-2xl group-hover:text-amber-600 transition-colors">{item.result}</div>
                   </div>
                 ))
               )}
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-5 gap-2 sm:gap-3 flex-1">
+              <div className="grid grid-cols-5 gap-2 sm:gap-3 flex-1 relative z-10">
                 {SCIENTIFIC_BUTTONS.map(renderButton)}
               </div>
               <div className={cn(
-                "bg-slate-900/50 rounded-full",
-                isPortrait ? "h-2 w-full my-1" : "w-2 h-full mx-1"
+                "bg-amber-200/50 rounded-full",
+                isPortrait ? "h-1 w-full my-1" : "w-1 h-full mx-1"
               )} />
-              <div className="grid grid-cols-5 gap-2 sm:gap-3 flex-1">
+              <div className="grid grid-cols-5 gap-2 sm:gap-3 flex-1 relative z-10">
                 {NUMPAD_BUTTONS.map(renderButton)}
               </div>
             </>
