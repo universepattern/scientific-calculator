@@ -1,6 +1,6 @@
 import React, { useReducer, useCallback, useEffect, useState } from 'react';
 import { create, all } from 'mathjs';
-import { Smartphone, Monitor } from 'lucide-react';
+import { Smartphone, Monitor, Copy, Check, History } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -10,37 +10,50 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+type HistoryItem = {
+  expression: string;
+  result: string;
+};
+
 type CalcState = {
   display: string;
   expression: string;
   lastResult: string | null;
+  history: HistoryItem[];
   hasError: boolean;
 };
 
 type CalcAction =
   | { type: 'APPEND'; payload: string }
+  | { type: 'SET_EXPRESSION'; payload: string }
   | { type: 'CLEAR' }
   | { type: 'DELETE' }
-  | { type: 'EVALUATE' };
+  | { type: 'EVALUATE' }
+  | { type: 'CLEAR_HISTORY' };
 
 const initialState: CalcState = {
   display: '0',
   expression: '',
   lastResult: null,
+  history: [],
   hasError: false,
 };
 
 function calculatorReducer(state: CalcState, action: CalcAction): CalcState {
   switch (action.type) {
     case 'APPEND': {
-      if (state.hasError) return { ...initialState, expression: action.payload, display: action.payload };
+      if (state.hasError) return { ...initialState, history: state.history, expression: action.payload, display: action.payload };
       const newExpression = state.expression === '0' ? action.payload : state.expression + action.payload;
       return { ...state, expression: newExpression, display: newExpression };
     }
+    case 'SET_EXPRESSION':
+      return { ...state, expression: action.payload, display: action.payload, hasError: false };
     case 'CLEAR':
-      return initialState;
+      return { ...initialState, history: state.history };
+    case 'CLEAR_HISTORY':
+      return { ...state, history: [] };
     case 'DELETE': {
-      if (state.hasError) return initialState;
+      if (state.hasError) return { ...initialState, history: state.history };
       const sliced = state.expression.slice(0, -1);
       return { ...state, expression: sliced || '', display: sliced || '0' };
     }
@@ -49,11 +62,21 @@ function calculatorReducer(state: CalcState, action: CalcAction): CalcState {
         if (!state.expression) return state;
         const result = math.evaluate(state.expression);
         const formattedResult = math.format(result, { precision: 10 }).toString();
+        
+        // Avoid duplicate history entries
+        const isDuplicate = state.history.length > 0 && 
+            state.history[state.history.length - 1].expression === state.expression;
+
+        const newHistory = isDuplicate ? state.history : [...state.history, { expression: state.expression, result: formattedResult }];
+        // Keep last 50 history entries
+        if (newHistory.length > 50) newHistory.shift();
+
         return {
           ...state,
           lastResult: state.expression,
           display: formattedResult,
           expression: formattedResult,
+          history: newHistory,
           hasError: false,
         };
       } catch (err) {
@@ -128,13 +151,22 @@ const NUMPAD_BUTTONS: ButtonDef[] = [
 export const ScientificCalculator: React.FC = () => {
   const [state, dispatch] = useReducer(calculatorReducer, initialState);
   const [isPortrait, setIsPortrait] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handlePress = useCallback((btn: ButtonDef) => {
+    if (showHistory) setShowHistory(false);
     if (btn.value === 'clear') dispatch({ type: 'CLEAR' });
     else if (btn.value === 'del') dispatch({ type: 'DELETE' });
     else if (btn.value === 'eval') dispatch({ type: 'EVALUATE' });
     else dispatch({ type: 'APPEND', payload: btn.value });
-  }, []);
+  }, [showHistory]);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(state.display);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -184,9 +216,30 @@ export const ScientificCalculator: React.FC = () => {
         "bg-slate-900 rounded-[2rem] shadow-2xl border-4 border-slate-800 overflow-hidden flex transition-all duration-500",
         isPortrait ? "flex-col max-w-md w-full" : "flex-col max-w-4xl w-full"
       )}>
-        <div className="p-6 sm:p-8 flex flex-col items-end justify-end space-y-2 bg-slate-900/80 border-b-4 border-slate-950 min-h-[160px]">
-          <div className="text-slate-400 text-sm sm:text-base h-6 w-full truncate text-right font-medium">
-            {state.lastResult ? `${state.lastResult} =` : ''}
+        <div className="relative p-6 sm:p-8 flex flex-col items-end justify-end space-y-2 bg-slate-900/80 border-b-4 border-slate-950 min-h-[160px]">
+          
+          <div className="absolute top-4 left-4 flex gap-4">
+            <button 
+              onClick={handleCopy} 
+              className="text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-2 text-sm font-semibold group"
+              title="Copy to Clipboard"
+            >
+              {copied ? <Check size={20} className="text-emerald-400" /> : <Copy size={20} className="group-hover:scale-110 transition-transform" />}
+            </button>
+            <button 
+              onClick={() => setShowHistory(!showHistory)} 
+              className={cn(
+                "hover:text-slate-300 transition-colors flex items-center gap-2 text-sm font-semibold group",
+                showHistory ? "text-emerald-400" : "text-slate-500"
+              )}
+              title="Calculation History"
+            >
+              <History size={20} className="group-hover:scale-110 transition-transform" />
+            </button>
+          </div>
+
+          <div className="text-slate-400 text-sm sm:text-base h-6 w-full truncate text-right font-medium pr-1">
+            {state.lastResult && !showHistory ? `${state.lastResult} =` : ''}
           </div>
           <div className={cn(
             "text-4xl sm:text-6xl font-bold transition-all truncate w-full text-right tracking-tight",
@@ -197,21 +250,56 @@ export const ScientificCalculator: React.FC = () => {
         </div>
 
         <div className={cn(
-          "flex p-4 sm:p-6 gap-4 sm:gap-6 bg-slate-800/40",
-          isPortrait ? "flex-col" : "flex-row"
+          "bg-slate-800/40 relative",
+          showHistory ? "flex flex-col p-4 sm:p-6" : cn("flex p-4 sm:p-6 gap-4 sm:gap-6", isPortrait ? "flex-col" : "flex-row")
         )}>
-          <div className="grid grid-cols-5 gap-2 sm:gap-3 flex-1">
-            {SCIENTIFIC_BUTTONS.map(renderButton)}
-          </div>
-
-          <div className={cn(
-            "bg-slate-900/50 rounded-full",
-            isPortrait ? "h-2 w-full my-1" : "w-2 h-full mx-1"
-          )} />
-
-          <div className="grid grid-cols-5 gap-2 sm:gap-3 flex-1">
-            {NUMPAD_BUTTONS.map(renderButton)}
-          </div>
+          {showHistory ? (
+            <div className="w-full h-[350px] sm:h-[450px] overflow-y-auto flex flex-col gap-3 pr-2">
+              <div className="flex justify-between items-center mb-2 px-2 sticky top-0 bg-slate-800/40 backdrop-blur-md py-2 z-10 rounded-lg">
+                <h2 className="text-slate-400 font-bold tracking-widest text-sm">HISTORY</h2>
+                {state.history.length > 0 && (
+                  <button 
+                    onClick={() => dispatch({ type: 'CLEAR_HISTORY' })}
+                    className="text-rose-400 hover:text-rose-300 text-xs font-semibold tracking-wider bg-rose-950/30 px-4 py-1.5 rounded-full hover:bg-rose-900/50 transition-colors"
+                  >
+                    CLEAR
+                  </button>
+                )}
+              </div>
+              {state.history.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center text-slate-500 font-medium pb-10">
+                  No history recorded yet.
+                </div>
+              ) : (
+                [...state.history].reverse().map((item, i) => (
+                  <div 
+                    key={i} 
+                    className="flex flex-col text-right cursor-pointer bg-slate-800/60 hover:bg-slate-700 p-4 rounded-xl transition-colors border border-slate-700/50 group"
+                    onClick={() => {
+                      dispatch({ type: 'SET_EXPRESSION', payload: item.result });
+                      setShowHistory(false);
+                    }}
+                  >
+                    <div className="text-slate-400 text-sm mb-1 group-hover:text-slate-300 transition-colors">{item.expression} =</div>
+                    <div className="text-slate-200 font-bold text-2xl group-hover:text-emerald-400 transition-colors">{item.result}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-5 gap-2 sm:gap-3 flex-1">
+                {SCIENTIFIC_BUTTONS.map(renderButton)}
+              </div>
+              <div className={cn(
+                "bg-slate-900/50 rounded-full",
+                isPortrait ? "h-2 w-full my-1" : "w-2 h-full mx-1"
+              )} />
+              <div className="grid grid-cols-5 gap-2 sm:gap-3 flex-1">
+                {NUMPAD_BUTTONS.map(renderButton)}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
