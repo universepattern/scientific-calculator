@@ -231,7 +231,7 @@ const MathBackground = () => {
   return (
     <canvas 
       ref={canvasRef} 
-      className="fixed inset-0 pointer-events-none blur-[4px] opacity-60 z-0" 
+      className="fixed inset-0 pointer-events-none blur-[1px] opacity-80 z-0" 
     />
   );
 };
@@ -294,11 +294,7 @@ export const ScientificCalculator: React.FC = () => {
       
       <MathBackground />
       
-      <div className="w-full max-w-4xl flex justify-between items-center mb-6 px-4 relative z-10">
-        <h1 className="text-slate-300 font-bold tracking-widest text-lg drop-shadow-sm flex items-center gap-3">
-          <span className="text-blue-500 bg-blue-500/10 p-2 rounded-lg"><Monitor size={20} /></span>
-          QUANTUM CALC
-        </h1>
+      <div className="w-full max-w-4xl flex justify-end items-center mb-6 px-4 relative z-10">
         <button 
           onClick={() => setIsPortrait(!isPortrait)}
           className="flex items-center gap-2 bg-slate-800/80 backdrop-blur-md text-slate-300 px-5 py-2.5 rounded-xl hover:bg-slate-700 transition-colors font-medium shadow-lg border border-slate-700 active:scale-95"
