@@ -10,10 +10,12 @@ This is a responsive, web-based calculator that supports standard arithmetic ope
 
 ## Features
 - **High Precision Math:** Prevents standard JavaScript floating-point errors (e.g., `0.1 + 0.2` yielding `0.30000000000000004`).
-- **Scientific Operations:** Includes `sin`, `cos`, `tan`, `sqrt`, and `EXP`.
-- **Modern UI/UX:** Built with Tailwind CSS v4, featuring a sleek slate/dark aesthetic with interactive hover and active scaling animations.
-- **Robust State Management:** Powered by React `useReducer` for clean, predictable handling of calculator inputs and expression building.
-- **Responsive Layout:** Perfectly scales from mobile phone screens to large desktop monitors.
+- **Full Scientific Operations:** Includes trigonometric functions, logarithms, roots, and exponents.
+- **Calculation History:** Automatically saves your last 50 calculations. Click any past equation to instantly reload the result.
+- **Copy to Clipboard:** One-click button to instantly copy the current display or result.
+- **Full Keyboard Support:** Type seamlessly using your physical keyboard (supports numbers, operations, Enter, Backspace, Escape, and letters for trig functions).
+- **Responsive Layout Toggle:** Defaults to a wide landscape layout, but features a dedicated "Tall Layout" button to optimize the view for portrait mobile screens.
+- **Modern UI/UX:** Built with Tailwind CSS v4, featuring a sleek, tactile slate/dark aesthetic.
 
 ## The Math Behind It
 Standard JavaScript uses the `eval()` function or primitive number operators, which are notorious for floating-point inaccuracies and security vulnerabilities. 
