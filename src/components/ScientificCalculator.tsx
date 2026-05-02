@@ -170,16 +170,15 @@ const MathBackground = () => {
 
     const drops: { x: number, y: number, speed: number, text: string, opacity: number, scale: number }[] = [];
     
-    // Create columns like matrix
     const columns = Math.floor(width / 150);
     
     for (let i = 0; i < columns; i++) {
       drops.push({
         x: i * 150 + Math.random() * 50,
         y: Math.random() * height * -1,
-        speed: 0.15 + Math.random() * 0.3, // Super slow motion
+        speed: 0.15 + Math.random() * 0.3,
         text: equations[Math.floor(Math.random() * equations.length)],
-        opacity: 0.15 + Math.random() * 0.4,
+        opacity: 0.15 + Math.random() * 0.25,
         scale: 0.9 + Math.random() * 0.4
       });
     }
@@ -190,7 +189,8 @@ const MathBackground = () => {
       ctx.clearRect(0, 0, width, height);
       
       drops.forEach(drop => {
-        ctx.fillStyle = `rgba(217, 119, 6, ${drop.opacity})`; // amber-600 color
+        // Dimmer amber/orange for the dark background
+        ctx.fillStyle = `rgba(217, 119, 6, ${drop.opacity * 0.6})`; 
         ctx.font = `${14 * drop.scale}px monospace`;
         ctx.fillText(drop.text, drop.x, drop.y);
         
@@ -224,7 +224,7 @@ const MathBackground = () => {
   return (
     <canvas 
       ref={canvasRef} 
-      className="fixed inset-0 pointer-events-none blur-[3px] opacity-80 z-0" 
+      className="fixed inset-0 pointer-events-none blur-[3px] opacity-70 z-0" 
     />
   );
 };
@@ -269,11 +269,11 @@ export const ScientificCalculator: React.FC = () => {
       onClick={() => handlePress(btn)}
       className={cn(
         "h-14 sm:h-16 rounded-xl text-sm sm:text-lg font-bold transition-all active:scale-95 flex items-center justify-center shadow-sm border-b-4 active:border-b-0 active:translate-y-1 relative z-10",
-        btn.type === 'num' && "bg-orange-50 border-orange-200 text-orange-950 hover:bg-orange-100",
-        btn.type === 'op' && "bg-amber-200 border-amber-300 text-amber-900 hover:bg-amber-300",
-        btn.type === 'func' && "bg-orange-100/60 border-orange-200 text-orange-800 hover:bg-orange-200 text-xs sm:text-sm",
-        btn.type === 'util' && "bg-rose-200 border-rose-300 text-rose-900 hover:bg-rose-300",
-        btn.type === 'action' && "bg-amber-600 border-amber-700 text-white hover:bg-amber-500"
+        btn.type === 'num' && "bg-stone-800 border-stone-950 text-stone-200 hover:bg-stone-700",
+        btn.type === 'op' && "bg-amber-900/80 border-amber-950 text-amber-100 hover:bg-amber-800",
+        btn.type === 'func' && "bg-stone-800/50 border-stone-950 text-amber-500/80 hover:bg-stone-700 text-xs sm:text-sm",
+        btn.type === 'util' && "bg-rose-950/60 border-rose-950 text-rose-300 hover:bg-rose-900/80",
+        btn.type === 'action' && "bg-amber-600 border-amber-800 text-stone-50 hover:bg-amber-500"
       )}
     >
       {btn.label}
@@ -281,14 +281,14 @@ export const ScientificCalculator: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-orange-50/50 p-4 font-mono select-none relative overflow-hidden">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-stone-950 p-4 font-mono select-none relative overflow-hidden">
       <MathBackground />
       
       <div className="w-full max-w-4xl flex justify-between items-center mb-6 px-4 relative z-10">
-        <h1 className="text-amber-700/80 font-bold tracking-widest text-lg drop-shadow-sm">SCIENTIFIC CALCULATOR</h1>
+        <h1 className="text-stone-400 font-bold tracking-widest text-lg drop-shadow-sm">SCIENTIFIC CALCULATOR</h1>
         <button 
           onClick={() => setIsPortrait(!isPortrait)}
-          className="flex items-center gap-2 bg-white/60 backdrop-blur-md text-amber-800 px-5 py-2.5 rounded-full hover:bg-white/80 transition-colors font-semibold shadow-lg border border-amber-200 active:scale-95"
+          className="flex items-center gap-2 bg-stone-800/80 backdrop-blur-md text-stone-300 px-5 py-2.5 rounded-full hover:bg-stone-700 transition-colors font-semibold shadow-lg border border-stone-800 active:scale-95"
         >
           {isPortrait ? <Monitor size={18} /> : <Smartphone size={18} />}
           {isPortrait ? 'Wide Layout' : 'Tall Layout'}
@@ -296,15 +296,15 @@ export const ScientificCalculator: React.FC = () => {
       </div>
 
       <div className={cn(
-        "bg-white/80 backdrop-blur-2xl rounded-[2rem] shadow-[0_20px_50px_rgba(217,119,6,0.15)] border border-orange-100 overflow-hidden flex transition-all duration-500 relative z-10",
+        "bg-stone-900/80 backdrop-blur-2xl rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-stone-800 overflow-hidden flex transition-all duration-500 relative z-10",
         isPortrait ? "flex-col max-w-md w-full" : "flex-col max-w-4xl w-full"
       )}>
-        <div className="relative p-6 sm:p-8 flex flex-col items-end justify-end space-y-2 bg-gradient-to-br from-amber-50/90 to-orange-100/90 border-b border-orange-200 min-h-[160px]">
+        <div className="relative p-6 sm:p-8 flex flex-col items-end justify-end space-y-2 bg-gradient-to-br from-stone-900/90 to-amber-950/40 border-b-2 border-stone-950 min-h-[160px]">
           
           <div className="absolute top-4 left-4 flex gap-4">
             <button 
               onClick={handleCopy} 
-              className="text-amber-600/60 hover:text-amber-800 transition-colors flex items-center gap-2 text-sm font-semibold group"
+              className="text-stone-500 hover:text-amber-400 transition-colors flex items-center gap-2 text-sm font-semibold group"
               title="Copy to Clipboard"
             >
               {copied ? <Check size={20} className="text-emerald-500" /> : <Copy size={20} className="group-hover:scale-110 transition-transform" />}
@@ -312,8 +312,8 @@ export const ScientificCalculator: React.FC = () => {
             <button 
               onClick={() => setShowHistory(!showHistory)} 
               className={cn(
-                "hover:text-amber-800 transition-colors flex items-center gap-2 text-sm font-semibold group",
-                showHistory ? "text-amber-800" : "text-amber-600/60"
+                "hover:text-amber-400 transition-colors flex items-center gap-2 text-sm font-semibold group",
+                showHistory ? "text-amber-400" : "text-stone-500"
               )}
               title="Calculation History"
             >
@@ -321,50 +321,50 @@ export const ScientificCalculator: React.FC = () => {
             </button>
           </div>
 
-          <div className="text-amber-700/60 text-sm sm:text-base h-6 w-full truncate text-right font-semibold pr-1">
+          <div className="text-stone-500 text-sm sm:text-base h-6 w-full truncate text-right font-semibold pr-1">
             {state.lastResult && !showHistory ? `${state.lastResult} =` : ''}
           </div>
           <div className={cn(
             "text-4xl sm:text-6xl font-bold transition-all truncate w-full text-right tracking-tight drop-shadow-sm",
-            state.hasError ? "text-rose-500" : "text-amber-950"
+            state.hasError ? "text-rose-500" : "text-amber-50"
           )}>
             {state.display}
           </div>
         </div>
 
         <div className={cn(
-          "bg-orange-50/50 relative",
+          "bg-stone-950/40 relative",
           showHistory ? "flex flex-col p-4 sm:p-6" : cn("flex p-4 sm:p-6 gap-4 sm:gap-6", isPortrait ? "flex-col" : "flex-row")
         )}>
           {showHistory ? (
             <div className="w-full h-[350px] sm:h-[450px] overflow-y-auto flex flex-col gap-3 pr-2">
-              <div className="flex justify-between items-center mb-2 px-2 sticky top-0 bg-orange-50/80 backdrop-blur-md py-2 z-20 rounded-lg">
-                <h2 className="text-amber-800 font-bold tracking-widest text-sm">HISTORY</h2>
+              <div className="flex justify-between items-center mb-2 px-2 sticky top-0 bg-stone-900/90 backdrop-blur-md py-2 z-20 rounded-lg">
+                <h2 className="text-stone-400 font-bold tracking-widest text-sm">HISTORY</h2>
                 {state.history.length > 0 && (
                   <button 
                     onClick={() => dispatch({ type: 'CLEAR_HISTORY' })}
-                    className="text-rose-600 hover:text-rose-700 text-xs font-bold tracking-wider bg-rose-100 px-4 py-1.5 rounded-full hover:bg-rose-200 transition-colors shadow-sm"
+                    className="text-rose-400 hover:text-rose-300 text-xs font-bold tracking-wider bg-rose-950/50 px-4 py-1.5 rounded-full hover:bg-rose-900/60 transition-colors shadow-sm"
                   >
                     CLEAR
                   </button>
                 )}
               </div>
               {state.history.length === 0 ? (
-                <div className="flex-1 flex items-center justify-center text-amber-700/60 font-medium pb-10">
+                <div className="flex-1 flex items-center justify-center text-stone-600 font-medium pb-10">
                   No history recorded yet.
                 </div>
               ) : (
                 [...state.history].reverse().map((item, i) => (
                   <div 
                     key={i} 
-                    className="flex flex-col text-right cursor-pointer bg-white/80 hover:bg-orange-50 p-4 rounded-xl transition-colors border border-amber-100 shadow-sm group"
+                    className="flex flex-col text-right cursor-pointer bg-stone-800/60 hover:bg-stone-700/80 p-4 rounded-xl transition-colors border border-stone-800/50 shadow-sm group"
                     onClick={() => {
                       dispatch({ type: 'SET_EXPRESSION', payload: item.result });
                       setShowHistory(false);
                     }}
                   >
-                    <div className="text-amber-700/70 text-sm mb-1 group-hover:text-amber-800 transition-colors font-medium">{item.expression} =</div>
-                    <div className="text-amber-950 font-bold text-2xl group-hover:text-amber-600 transition-colors">{item.result}</div>
+                    <div className="text-stone-500 text-sm mb-1 group-hover:text-stone-400 transition-colors font-medium">{item.expression} =</div>
+                    <div className="text-amber-100 font-bold text-2xl group-hover:text-amber-400 transition-colors">{item.result}</div>
                   </div>
                 ))
               )}
@@ -375,7 +375,7 @@ export const ScientificCalculator: React.FC = () => {
                 {SCIENTIFIC_BUTTONS.map(renderButton)}
               </div>
               <div className={cn(
-                "bg-amber-200/50 rounded-full",
+                "bg-stone-800/50 rounded-full",
                 isPortrait ? "h-1 w-full my-1" : "w-1 h-full mx-1"
               )} />
               <div className="grid grid-cols-5 gap-2 sm:gap-3 flex-1 relative z-10">
